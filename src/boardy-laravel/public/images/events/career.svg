@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500">
+  <rect width="900" height="500" fill="#111827"/>
+  <rect x="80" y="90" width="740" height="320" rx="32" fill="#f59e0b" opacity="0.9"/>
+  <text x="120" y="220" fill="#111827" font-size="52" font-family="Arial, sans-serif" font-weight="700">Career Meetup</text>
+  <text x="120" y="290" fill="#1f2937" font-size="30" font-family="Arial, sans-serif">IT company presentation</text>
+</svg>

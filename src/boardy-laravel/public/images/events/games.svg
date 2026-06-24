@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500">
+  <rect width="900" height="500" fill="#312e81"/>
+  <circle cx="260" cy="230" r="130" fill="#a855f7" opacity="0.8"/>
+  <circle cx="620" cy="270" r="150" fill="#ec4899" opacity="0.7"/>
+  <text x="80" y="225" fill="#ffffff" font-size="54" font-family="Arial, sans-serif" font-weight="700">Board Games Night</text>
+  <text x="80" y="295" fill="#fce7f3" font-size="30" font-family="Arial, sans-serif">Student club evening</text>
+</svg>
