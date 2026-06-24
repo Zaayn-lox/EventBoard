@@ -3,7 +3,6 @@
 use App\Http\Controllers\Auth\GitHubController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventRegistrationController;
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -14,32 +13,39 @@ Route::get('/dashboard', function () {
     return redirect()->route('events.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/health', function () {
-    return response()->json(['ok' => true]);
-})->name('health');
-
-Route::resource('events', EventController::class)
-    ->only(['index', 'show']);
+Route::get('/events', [EventController::class, 'index'])->name('events.index');
 
 Route::middleware('auth')->group(function () {
-    Route::resource('events', EventController::class)
-        ->except(['index', 'show']);
+    Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
+    Route::post('/events', [EventController::class, 'store'])->name('events.store');
+
+    Route::get('/events/{event}/edit', [EventController::class, 'edit'])
+        ->whereNumber('event')
+        ->name('events.edit');
+
+    Route::put('/events/{event}', [EventController::class, 'update'])
+        ->whereNumber('event')
+        ->name('events.update');
+
+    Route::patch('/events/{event}', [EventController::class, 'update'])
+        ->whereNumber('event');
+
+    Route::delete('/events/{event}', [EventController::class, 'destroy'])
+        ->whereNumber('event')
+        ->name('events.destroy');
 
     Route::post('/events/{event}/join', [EventRegistrationController::class, 'store'])
+        ->whereNumber('event')
         ->name('events.join');
 
     Route::delete('/events/{event}/join', [EventRegistrationController::class, 'destroy'])
+        ->whereNumber('event')
         ->name('events.leave');
-
-    Route::get('/profile', [ProfileController::class, 'edit'])
-        ->name('profile.edit');
-
-    Route::patch('/profile', [ProfileController::class, 'update'])
-        ->name('profile.update');
-
-    Route::delete('/profile', [ProfileController::class, 'destroy'])
-        ->name('profile.destroy');
 });
+
+Route::get('/events/{event}', [EventController::class, 'show'])
+    ->whereNumber('event')
+    ->name('events.show');
 
 Route::get('/auth/github', [GitHubController::class, 'redirect'])
     ->middleware('guest')
@@ -49,4 +55,12 @@ Route::get('/auth/github/callback', [GitHubController::class, 'callback'])
     ->middleware('guest')
     ->name('auth.github.callback');
 
-require __DIR__.'/auth.php';
+Route::get('/oauth/callback', function () {
+    return view('auth.callback');
+})->name('oauth.callback');
+
+Route::get('/health', function () {
+    return response()->json(['ok' => true]);
+});
+
+require __DIR__ . '/auth.php';
