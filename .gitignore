@@ -1,0 +1,35 @@
+# env files
+.env
+.env.*
+!.env.example
+src/boardy-laravel/.env
+src/boardy-laravel/.env.*
+!src/boardy-laravel/.env.example
+
+# Laravel
+src/boardy-laravel/vendor/
+src/boardy-laravel/node_modules/
+src/boardy-laravel/storage/logs/*.log
+src/boardy-laravel/storage/framework/cache/
+src/boardy-laravel/storage/framework/sessions/
+src/boardy-laravel/storage/framework/views/
+src/boardy-laravel/bootstrap/cache/*.php
+src/boardy-laravel/storage/oauth-private.key
+src/boardy-laravel/storage/oauth-public.key
+
+# Python
+src/boardy-api/__pycache__/
+src/boardy-api/**/__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Docker / local
+*.tar.gz
+*.zip
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
