@@ -4,41 +4,38 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Event;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
 
 class EventController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request)
     {
+        $categorySlug = $request->get('category');
+
+        $events = Event::with(['category'])
+            ->withCount(['registrations as participants_count'])
+            ->when($categorySlug, function ($query) use ($categorySlug) {
+                $query->whereHas('category', function ($q) use ($categorySlug) {
+                    $q->where('slug', $categorySlug);
+                });
+            })
+            ->orderBy('starts_at')
+            ->get();
+
         $categories = Category::orderBy('name')->get();
-
-        $eventsQuery = Event::query()
-            ->with(['category', 'author'])
-            ->withCount('registrations')
-            ->orderBy('starts_at');
-
-        if ($request->filled('category')) {
-            $eventsQuery->whereHas('category', function ($query) use ($request) {
-                $query->where('slug', $request->string('category'));
-            });
-        }
-
-        $events = $eventsQuery->get();
 
         return view('events.index', [
             'events' => $events,
             'categories' => $categories,
-            'activeCategory' => $request->string('category')->toString(),
+            'activeCategory' => $categorySlug,
         ]);
     }
 
-    public function show(Event $event): View
+    public function show(Event $event)
     {
-        $event->load(['category', 'author', 'images'])
-            ->loadCount('registrations');
+        $event->load(['category', 'author']);
+        $event->loadCount(['registrations as participants_count']);
 
         $isJoined = false;
 
@@ -51,24 +48,25 @@ class EventController extends Controller
         return view('events.show', [
             'event' => $event,
             'isJoined' => $isJoined,
-            'participantsCount' => $event->registrations_count,
+            'participantsCount' => $event->participants_count,
         ]);
     }
 
-    public function create(): View
+    public function create()
     {
+        $categories = Category::orderBy('name')->get();
+
         return view('events.create', [
-            'categories' => Category::orderBy('name')->get(),
-            'event' => new Event(),
+            'categories' => $categories,
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         $data = $request->validate([
             'category_id' => ['required', 'exists:categories,id'],
             'title' => ['required', 'string', 'max:200'],
-            'description' => ['required', 'string', 'max:3000'],
+            'description' => ['required', 'string'],
             'location' => ['required', 'string', 'max:255'],
             'starts_at' => ['required', 'date'],
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
@@ -88,24 +86,22 @@ class EventController extends Controller
             ->with('status', 'Событие создано.');
     }
 
-    public function edit(Event $event): View
+    public function edit(Event $event)
     {
-        $this->ensureOwner($event);
+        $categories = Category::orderBy('name')->get();
 
         return view('events.edit', [
             'event' => $event,
-            'categories' => Category::orderBy('name')->get(),
+            'categories' => $categories,
         ]);
     }
 
-    public function update(Request $request, Event $event): RedirectResponse
+    public function update(Request $request, Event $event)
     {
-        $this->ensureOwner($event);
-
         $data = $request->validate([
             'category_id' => ['required', 'exists:categories,id'],
             'title' => ['required', 'string', 'max:200'],
-            'description' => ['required', 'string', 'max:3000'],
+            'description' => ['required', 'string'],
             'location' => ['required', 'string', 'max:255'],
             'starts_at' => ['required', 'date'],
             'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
@@ -113,7 +109,7 @@ class EventController extends Controller
         ]);
 
         if (empty($data['image_url'])) {
-            $data['image_url'] = $event->image_url ?: '/images/events/hackathon.svg';
+            $data['image_url'] = '/images/events/hackathon.svg';
         }
 
         $event->update($data);
@@ -123,19 +119,12 @@ class EventController extends Controller
             ->with('status', 'Событие обновлено.');
     }
 
-    public function destroy(Event $event): RedirectResponse
+    public function destroy(Event $event)
     {
-        $this->ensureOwner($event);
-
         $event->delete();
 
         return redirect()
             ->route('events.index')
             ->with('status', 'Событие удалено.');
-    }
-
-    private function ensureOwner(Event $event): void
-    {
-        abort_unless(Auth::check() && $event->user_id === Auth::id(), 403);
     }
 }

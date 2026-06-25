@@ -47,7 +47,7 @@
                         <div class="meta">
                             <div>Дата: {{ $event->starts_at->format('d.m.Y H:i') }}</div>
                             <div>Место: {{ $event->location }}</div>
-                            <div>Участников: {{ $event->registrations_count }}</div>
+                            <div>Участников: {{ $event->participants_count ?? 0 }}</div>
                         </div>
 
                         <p class="description">
